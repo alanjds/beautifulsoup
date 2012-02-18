@@ -79,7 +79,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE, DAMMIT.
 from __future__ import generators
 
 __author__ = "Leonard Richardson (leonardr@segfault.org)"
-__version__ = "3.2.0"
+__version__ = "3.2.0-ajs"
 __copyright__ = "Copyright (c) 2004-2010 Leonard Richardson"
 __license__ = "New-style BSD"
 
@@ -691,7 +691,7 @@ class Tag(PageElement):
         return "&" + self.XML_SPECIAL_CHARS_TO_ENTITIES[x.group(0)[0]] + ";"
 
     def __str__(self, encoding=DEFAULT_OUTPUT_ENCODING,
-                prettyPrint=False, indentLevel=0):
+                prettyPrint=False, indentLevel=0, spacesPerLevel=1):
         """Returns a string or Unicode representation of this tag and
         its contents. To get Unicode, pass None for encoding.
 
@@ -751,7 +751,9 @@ class Tag(PageElement):
             indentTag = indentLevel
             space = (' ' * (indentTag-1))
             indentContents = indentTag + 1
-        contents = self.renderContents(encoding, prettyPrint, indentContents)
+            if indentLevel > 0:
+                indentContents += spacesPerLevel - 1
+        contents = self.renderContents(encoding, prettyPrint, indentContents, spacesPerLevel)
         if self.hidden:
             s = contents
         else:
@@ -792,11 +794,11 @@ class Tag(PageElement):
             current.nextSibling = None
             current = next
 
-    def prettify(self, encoding=DEFAULT_OUTPUT_ENCODING):
-        return self.__str__(encoding, True)
+    def prettify(self, encoding=DEFAULT_OUTPUT_ENCODING, spacesPerLevel=1):
+        return self.__str__(encoding, True, spacesPerLevel=spacesPerLevel)
 
     def renderContents(self, encoding=DEFAULT_OUTPUT_ENCODING,
-                       prettyPrint=False, indentLevel=0):
+                       prettyPrint=False, indentLevel=0, spacesPerLevel=1):
         """Renders the contents of this tag as a string in the given
         encoding. If encoding is None, returns a Unicode string.."""
         s=[]
@@ -805,7 +807,7 @@ class Tag(PageElement):
             if isinstance(c, NavigableString):
                 text = c.__str__(encoding)
             elif isinstance(c, Tag):
-                s.append(c.__str__(encoding, prettyPrint, indentLevel))
+                s.append(c.__str__(encoding, prettyPrint, indentLevel, spacesPerLevel))
             if text and prettyPrint:
                 text = text.strip()
             if text:
